@@ -1,11 +1,6 @@
 
-package edu.berkeley.cs.ucie.digital
-package interfaces
 
-import chisel3._
-import chisel3.util._
-
-case class FdiParams(width: Int = 64, dllpWidth: Int = 128, sbWidth: Int = 128)
+class FdiParams(width: Int = 64, dllpWidth: Int = 128, sbWidth: Int = 128)
 
 /** The flit-aware die-to-die interface (FDI), from the perspective of the
   * protocol layer.
@@ -17,7 +12,7 @@ class Fdi(params: FdiParams) extends Bundle {
     * Encompasses `lp_irdy`, `lp_valid`, and `pl_trdy` from the UCIe
     * specification.
     */
-  val lpData = Decoupled3(Bits((8 * params.width).W))
+  val lpData
 
   /** Adapter to protocol layer data.
     *
@@ -25,7 +20,7 @@ class Fdi(params: FdiParams) extends Bundle {
     * that backpressure is not possible. Data should be sampled whenever valid
     * is asserted at a clock edge.
     */
-  val plData = Flipped(Valid(Bits((8 * params.width).W)))
+  val plData
 
   /** When asserted at a rising clock edge, it indicates a single credit return
     * for the Retimer Receiver buffer. Each credit corresponds to 256B of
@@ -41,7 +36,7 @@ class Fdi(params: FdiParams) extends Bundle {
     * knowledge through other implementation specific means in order to
     * advertise this to the remote Link partner during parameter exchanges.
     */
-  val lpRetimerCrd = Output(Bool())
+  val lpRetimerCrd
 
   /** This signal is only applicable for CXL.cachemem in UCIe Flit Mode (i.e.,
     * the Adapter doing Retry) for CXL 256B Flit Mode. It is meant as a latency
@@ -71,7 +66,7 @@ class Fdi(params: FdiParams) extends Bundle {
     * Flit which had this set. It also must make sure to overwrite this flit
     * (with the next flit sent by the Protocol Layer) in the Tx Retry buffer.
     */
-  val lpCorruptCrc = Output(Bool())
+  val lpCorruptCrc
 
   /** Protocol Layer to Adapter transfer of DLLP bytes. This is not used for 68B
     * Flit Mode, CXL.cachemem or Streaming Protocols. For a 64B data path on
@@ -82,18 +77,18 @@ class Fdi(params: FdiParams) extends Bundle {
     *
     * Encompasses `lp_dllp` and `lp_dllp_valid` from the UCIe specification.
     */
-  val lpDllp = Valid(Bits(params.dllpWidth.W))
+  val lpDllp 
 
   /** Indicates that the corresponding DLLP bytes on lp_dllp follow the
     * Optimized_Update_FC format. It must stay asserted for the entire duration
     * of the DLLP transfer on lp_dllp.
     */
-  val lpDllpOfc = Output(Bool())
+  val lpDllpOfc 
 
   /** Protocol Layer to Adapter signal that indicates the stream ID to use with
     * data. Each stream ID maps to a unique protocol and stack.
     */
-  val lpStream = Output(new ProtoStream())
+  val lpStream 
 
   /** When asserted at a rising clock edge, it indicates a single credit return
     * from the Retimer. Each credit corresponds to 256B of mainband data
@@ -107,7 +102,7 @@ class Fdi(params: FdiParams) extends Bundle {
     * to the Protocol Layer on this bit after Adapter LSM has moved to Active
     * state.
     */
-  val plRetimerCrd = Input(Bool())
+  val plRetimerCrd 
 
   /** Adapter to Protocol Layer transfer of DLLP bytes. This is not used for 68B
     * Flit Mode, CXL.cachemem or Streaming Protocols. For a 64B data path on
@@ -123,19 +118,19 @@ class Fdi(params: FdiParams) extends Bundle {
     * on pl_data. There is no backpressure and the Protocol Layer must always
     * sink DLLPs.
     */
-  val plDllp = Flipped(Valid(Bits(params.dllpWidth.W)))
+  val plDllp
 
   /** Indicates that the corresponding DLLP bytes on pl_dllp follow the
     * Optimized_Update_FC format. It must stay asserted for the entire duration
     * of the DLLP transfer on pl_dllp.
     */
-  val plDllpOfc = Input(Bool())
+  val plDllpOfc 
 
   /** Adapter to Protocol Layer signal that indicates the stream ID to use with
     * data. Each stream ID maps to a unique protocol.
     */
 
-  val plStream = Input(new ProtoStream())
+  val plStream 
 
   /** Adapter to Protocol Layer indication to dump a Flit. This enables latency
     * optimizations on the Receiver data path when CRC checking is enabled in
@@ -158,10 +153,10 @@ class Fdi(params: FdiParams) extends Bundle {
     * cancellation in the correct order once they pass CRC after Retry etc. See
     * Section 8.2.5 for examples.
     */
-  val plFlitCancel = Input(Bool())
+  val plFlitCancel 
 
   /** Protocol Layer request to Adapter to request state change. */
-  val lpStateReq = Output(PhyStateReq())
+  val lpStateReq
 
   /** Protocol Layer to Adapter indication that an error has occurred which
     * requires the Link to go down. Adapter must propagate this request to RDI,
@@ -173,7 +168,7 @@ class Fdi(params: FdiParams) extends Bundle {
     * containment when applicable (for example, a viral error escalation could
     * map to the LinkError state)
     */
-  val lpLinkError = Output(Bool())
+  val lpLinkError
 
   /** Adapter to Protocol Layer Status indication of the Interface.
     *
@@ -187,7 +182,7 @@ class Fdi(params: FdiParams) extends Bundle {
     * Active, Active.PMNAK, Retrain, L1 or L2. The Link Status is considered
     * Down for other states of FDI.
     */
-  val plStateStatus = Input(PhyState())
+  val plStateStatus
 
   /** Adapter to the Protocol Layer indication that the Die-to-Die Link has
     * finished negotiation of parameters with remote Link partner and is ready
@@ -196,7 +191,7 @@ class Fdi(params: FdiParams) extends Bundle {
     * LinkError. It stays asserted while FDI is in Retrain, Active.PMNAK, L1 or
     * L2. It must de-assert during LinkReset, Disabled or LinkError states.
     */
-  val plInbandPres = Input(Bool())
+  val plInbandPres 
 
   /** Adapter to the Protocol Layer indication that it has detected a framing
     * related error. It is pipeline matched with the receive data path. It must
@@ -209,7 +204,7 @@ class Fdi(params: FdiParams) extends Bundle {
     * must initiate Link Retrain on RDI following this, if it was a framing
     * error detected by the Adapter.
     */
-  val plError = Input(Bool())
+  val plError
 
   /** Adapter to the Protocol Layer indication that a correctable error was
     * detected that does not affect the data path and will not cause Retrain on
@@ -218,14 +213,14 @@ class Fdi(params: FdiParams) extends Bundle {
     * errors with the pl_cerror indication on RDI and forward it to the Protocol
     * Layer
     */
-  val plCerror = Input(Bool())
+  val plCerror
 
   /** Adapter to the Protocol Layer indication that a non-fatal error was
     * detected. This is used by Protocol Layer for error logging and
     * corresponding escalation to software. The Adapter must OR any internally
     * detected errors with pl_nferror on RDI and forward the result on FDI.
     */
-  val plNfError = Input(Bool())
+  val plNfError
 
   /** Indicates a fatal error from the Adapter. Adapter must transition
     * pl_state_sts to LinkError if not already in LinkError state.
@@ -233,7 +228,7 @@ class Fdi(params: FdiParams) extends Bundle {
     * require upper layer escalation (or interrupt generation) depending on
     * system level requirements.
     */
-  val plTrainError = Input(Bool())
+  val plTrainError
 
   /** Adapter asserts this signal to request the Protocol Layer to open its
     * Receiver’s data path and get ready for receiving protocol data or Flits.
@@ -241,24 +236,24 @@ class Fdi(params: FdiParams) extends Bundle {
     * or Active. Together with lp_rx_active_sts, it forms a four way handshake.
     * See Section 8.2.7 for rules related to this handshake.
     */
-  val plRxActiveReq = Input(Bool())
+  val plRxActiveReq
 
   /** Protocol Layer responds to pl_rx_active_req after it is ready to receive
     * and parse protocol data or Flits. Together with pl_rx_active_req, it forms
     * a four way handshake. See Section 8.2.7 for rules related to this
     * handshake.
     */
-  val lpRxActiveStatus = Output(Bool())
+  val lpRxActiveStatus 
 
   /** Adapter indication to Protocol Layer the protocol that was negotiated
     * during training.
     */
-  val plProtocol = Input(Protocol())
+  val plProtocol 
 
   /** This indicates the negotiated Format. See Chapter 3.0 for the definitions
     * of these formats.
     */
-  val plProtocolFlitFormat = Input(FlitFormat())
+  val plProtocolFlitFormat
 
   /** Indication that pl_protocol, and pl_protocol_flitfmt have valid
     * information. This is a level signal, asserted when the Adapter has
@@ -273,12 +268,12 @@ class Fdi(params: FdiParams) extends Bundle {
     * pl_protocol_flitfmt are the correct values that can be sampled by the
     * Protocol Layer.
     */
-  val plProtocolValid = Input(Bool())
+  val plProtocolValid
 
   /** Adapter request to Protocol Layer to flush all Flits for state transition
     * and not prepare any new Flits. See Section 8.2.6 for details.
     */
-  val plStallReq = Input(Bool())
+  val plStallReq 
 
   /** Protocol Layer to Adapter indication that the Flits are aligned and
     * stalled (if pl_stallreq was asserted). It is strongly recommended that
@@ -286,7 +281,7 @@ class Fdi(params: FdiParams) extends Bundle {
     * Layer can respond to pl_stallreq with lp_stallack even if other
     * significant portions of the Protocol Layer are clock gated.
     */
-  val lpStallAck = Output(Bool())
+  val lpStallAck
 
   /** Adapter indication to Protocol Layer that the Link is doing training or
     * retraining (i.e., RDI has pl_phyinrecenter asserted or the Adapter LSM has
@@ -295,30 +290,30 @@ class Fdi(params: FdiParams) extends Bundle {
     * with the upper layer. The upper layers are permitted to use this to update
     * the “Link Training/Retraining” bit in the UCIe Link Status register.
     */
-  val plPhyInRecenter = Input(Bool())
+  val plPhyInRecenter 
 
   /** Adapter indication to Protocol Layer that the Physical Layer is in L1
     * power management state (i.e., RDI is in L1 state).
     */
-  val plPhyInL1 = Input(Bool())
+  val plPhyInL1 
 
   /** Adapter indication to Protocol Layer that the Physical Layer is in L2
     * power management state (i.e., RDI is in L2 state).
     */
-  val plPhyInL2 = Input(Bool())
+  val plPhyInL2
 
   /** Current Link speed. The Protocol Layer must only consider this signal to
     * be relevant when the FDI state is Active or Retrain. For multi-module
     * configurations, all modules must operate at the same speed.
     */
-  val plSpeedMode = Input(SpeedMode())
+  val plSpeedMode 
 
   /** Current Link Configuration. Indicates the current operating width of a
     * module. The Protocol Layer must only consider this signal to be relevant
     * when the FDI state is Active or Retrain. This is the total width across
     * all Active modules for the corresponding FDI instance.
     */
-  val plLinkWidth = Input(PhyWidth())
+  val plLinkWidth 
 
   /** Request from the Adapter to remove clock gating from the internal logic of
     * the Protocol Layer. This is an asynchronous signal from the Protocol
@@ -329,7 +324,7 @@ class Fdi(params: FdiParams) extends Bundle {
     * gating before responding with lp_clk_ack. If dynamic clock gating is not
     * supported, it is permitted for the Adapter to tie this signal to 1b.
     */
-  val plClkReq = Input(Bool())
+  val plClkReq
 
   /** Response from the Protocol Layer to the Adapter acknowledging that its
     * clocks have been ungated in response to pl_clk_req. This signal is only
@@ -339,7 +334,7 @@ class Fdi(params: FdiParams) extends Bundle {
     * and turn it around as lp_clk_ack. This way it will still participate in
     * the handshake even though it does not support dynamic clock gating.
     */
-  val lpClkAck = Output(Bool())
+  val lpClkAck 
 
   /** Request from the Protocol Layer to remove clock gating from the internal
     * logic of the Adapter. This is an asynchronous signal relative to lclk from
@@ -350,7 +345,7 @@ class Fdi(params: FdiParams) extends Bundle {
     * responding with pl_wake_ack. If dynamic clock gating is not supported, it
     * is permitted for the Protocol Layer to tie this signal to 1b.
     */
-  val lpWakeReq = Output(Bool())
+  val lpWakeReq 
 
   /** Response from the Adapter to the Protocol Layer acknowledging that its
     * clocks have been ungated in response to lp_wake_req. This signal is only
@@ -361,7 +356,7 @@ class Fdi(params: FdiParams) extends Bundle {
     * participate in the handshake even though it does not support dynamic clock
     * gating.
     */
-  val plWakeAck = Input(Bool())
+  val plWakeAck 
 
   /** This is the sideband interface from the Adapter to the Protocol Layer. See
     * Chapter 6.0 for details. NC is the width of the interface. Supported
@@ -370,7 +365,7 @@ class Fdi(params: FdiParams) extends Bundle {
     * When valid is asserted, it indicates that pl_cfg has valid information
     * that should be consumed by the Protocol Layer.
     */
-  val plConfig = Flipped(Valid(Bits(params.sbWidth.W)))
+  val plConfig 
 
   /** Credit return for sideband packets from the Adapter to the Protocol Layer
     * for sideband packets. Each credit corresponds to 64 bits of header and 64
@@ -385,13 +380,13 @@ class Fdi(params: FdiParams) extends Bundle {
     * as the sideband packets to ensure that no credit returns are dropped by
     * the receiver of the credit returns.
     */
-  val plConfigCredit = Output(Bool())
+  val plConfigCredit
 
   /** This is the sideband interface from Protocol Layer to the Adapter. See
     * Chapter 6.0 for details. NC is the width of the interface. Supported
     * values are 8, 16, and 32.
     */
-  val lpConfig = Valid(Bits(params.sbWidth.W))
+  val lpConfig
 
   /** Credit return for sideband packets from the Protocol Layer to the Adapter
     * for sideband packets. Each credit corresponds to 64 bits of header and 64
@@ -406,6 +401,6 @@ class Fdi(params: FdiParams) extends Bundle {
     * as the sideband packets to ensure that no credit returns are dropped by
     * the receiver of the credit returns.
     */
-  val lpConfigCredit = Input(Bool())
+
 }
 
