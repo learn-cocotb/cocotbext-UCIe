@@ -47,7 +47,11 @@ class Bus:
         
     def get_bus(self) -> BusBaseClass:
         """Creates and returns the bus object."""
-        return BusBaseClass()
+        input_signals = [self.get_signal_name(sig) for sig in self.input_signals]
+        output_signals = [self.get_signal_name(sig) for sig in self.output_signals]
+
+        return BusBaseClass(self.dut, signals=input_signals + output_signals)
+  
 
     def get_somespecialfunction_bus(self, params: int) -> BusBaseClass:
         """This function handles a special signal naming convention seen in this protocol that is not covered by the default bus structure and creates and returns the bus.
